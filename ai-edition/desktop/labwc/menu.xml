@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_menu>
+  <menu id="root-menu" label="TayebOS">
+    <item label="AI Chat">
+      <action name="Execute"><command>foot ai</command></action>
+    </item>
+    <item label="Terminal">
+      <action name="Execute"><command>foot</command></action>
+    </item>
+    <item label="Code Editor">
+      <action name="Execute"><command>lite-xl</command></action>
+    </item>
+    <item label="Browser">
+      <action name="Execute"><command>netsurf file:///usr/share/tayebos/welcome.html</command></action>
+    </item>
+    <separator />
+    <item label="Reconfigure">
+      <action name="Reconfigure" />
+    </item>
+    <item label="Exit Desktop">
+      <action name="Exit" />
+    </item>
+  </menu>
+</openbox_menu>

@@ -1,0 +1,22 @@
+{
+  "layer": "top",
+  "position": "bottom",
+  "height": 38,
+  "modules-left": ["custom/start", "wlr/taskbar"],
+  "modules-right": ["clock"],
+  "custom/start": {
+    "format": "  TayebOS  ",
+    "tooltip": false,
+    "on-click": "tayebos-menu"
+  },
+  "wlr/taskbar": {
+    "format": "{title}",
+    "icon-size": 18,
+    "on-click": "activate",
+    "on-click-middle": "close"
+  },
+  "clock": {
+    "format": "{:%H:%M   %a %d %b}",
+    "tooltip": false
+  }
+}

@@ -1,0 +1,5 @@
+swaybg -i /usr/share/tayebos/wallpaper.png &
+waybar &
+foot sh -c 'cat /etc/motd; echo; ollama list 2>/dev/null; exec sh' &
+sleep 4
+netsurf file:///usr/share/tayebos/welcome.html &

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<labwc_config>
+  <theme>
+    <name>TayebOS</name>
+    <titlebar>
+      <layout>iconify,max,close</layout>
+    </titlebar>
+  </theme>
+  <font place="ActiveWindow">
+    <name>sans</name>
+    <size>11</size>
+    <weight>bold</weight>
+  </font>
+  <font place="InactiveWindow">
+    <name>sans</name>
+    <size>11</size>
+  </font>
+  <mouse>
+    <context name="Root">
+      <mousebind button="Right" action="Press">
+        <action name="ShowMenu" menu="root-menu" />
+      </mousebind>
+    </context>
+  </mouse>
+</labwc_config>

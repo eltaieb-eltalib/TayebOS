@@ -89,6 +89,13 @@ with a very light browser and a very fast code editor.
   qwen2.5:0.5b baked in). Measured in QEMU: **62-65 MB idle RAM**,
   596 MB with the model loaded, and a real Arabic generation
   completed end-to-end. Details: `ai-edition/AI_GOAL.md`.
+- **Panel + Start menu (2026-11-15):** glass Waybar taskbar with a
+  TayebOS start button, open-window buttons and a clock; a bemenu
+  Start menu (AI Chat / Terminal / Editor / Browser / power) plus a
+  right-click desktop menu. Real keyboard+mouse input fixed via
+  eudev (the session runs under dbus-run-session). Full desktop +
+  panel + browser: **~102-113 MB RAM**. See
+  `ai-edition/screenshot-panel.png`.
 - **Desktop verified too:** typing `desktop` on tty1 launches
   labwc/Wayland with foot + lite-xl autostarted; total RAM with
   the full desktop running: **107 MB**. Screenshot:

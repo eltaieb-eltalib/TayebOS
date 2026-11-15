@@ -1,0 +1,9 @@
+#!/bin/sh
+# TayebOS AI Edition - launch the graphical desktop (labwc/Wayland).
+export XDG_RUNTIME_DIR=/run/user/0
+mkdir -p "$XDG_RUNTIME_DIR"
+chmod 700 "$XDG_RUNTIME_DIR"
+export WLR_RENDERER=pixman
+echo "Starting labwc desktop... log: /tmp/labwc.log"
+dbus-run-session -- labwc > /tmp/labwc.log 2>&1
+echo "Desktop exited - see /tmp/labwc.log"
