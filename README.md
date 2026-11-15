@@ -86,7 +86,8 @@ with a very light browser and a very fast code editor.
   `ai-edition/ai`, `ai-edition/setup.sh`.
 - **AI Edition image BUILT and verified (2026-11-15):**
   `ai-edition/tayebos-ai.img` (2 GB, Alpine 3.24 + Ollama 0.17.7,
-  qwen2.5:0.5b baked in). Measured in QEMU: **62-65 MB idle RAM**,
+  qwen2.5:0.5b + llama3.2:1b baked in, auto-picked by RAM).
+  Measured in QEMU: **62-65 MB idle RAM**,
   596 MB with the model loaded, and a real Arabic generation
   completed end-to-end. Details: `ai-edition/AI_GOAL.md`.
 - **Panel + Start menu (2026-11-15):** glass Waybar taskbar with a
