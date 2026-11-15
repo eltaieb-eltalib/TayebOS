@@ -1,0 +1,24 @@
+#!/bin/sh
+# TayebOS AI Edition - the `ai` terminal command.
+# Starts Ollama ONLY when you ask (zero RAM while idle), picks the
+# model that fits your RAM, chats, and lets Ollama unload the model
+# again after 2 minutes idle (OLLAMA_KEEP_ALIVE in setup.sh).
+set -e
+
+DIR=$(dirname "$0")
+MODEL="${OLLAMA_MODEL:-$("$DIR/select-model.sh")}"
+
+if ! curl -s http://127.0.0.1:11434/api/tags >/dev/null 2>&1; then
+    echo "TayebOS AI: starting Ollama (model for your RAM: $MODEL)..."
+    ollama serve >/var/log/ollama.log 2>&1 &
+    for i in $(seq 1 30); do
+        curl -s http://127.0.0.1:11434/api/tags >/dev/null 2>&1 && break
+        sleep 1
+    done
+fi
+
+if [ $# -eq 0 ]; then
+    exec ollama run "$MODEL"
+else
+    exec ollama run "$MODEL" "$*"
+fi

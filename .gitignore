@@ -1,0 +1,8 @@
+# Build outputs
+*.o
+*.elf
+*.bin
+# Disk images (too large for git - distributed separately)
+*.img
+# AI Edition build workspace (rootfs, logs, driver scripts)
+ai-edition/build/
