@@ -85,11 +85,17 @@ with a very light browser and a very fast code editor.
   `ai-edition/AI_GOAL.md`, `ai-edition/select-model.sh`,
   `ai-edition/ai`, `ai-edition/setup.sh`.
 - **AI Edition image BUILT and verified (2026-11-15):**
-  `ai-edition/tayebos-ai.img` (2 GB, Alpine 3.24 + Ollama 0.17.7,
-  qwen2.5:0.5b + llama3.2:1b baked in, auto-picked by RAM).
-  Measured in QEMU: **62-65 MB idle RAM**,
-  596 MB with the model loaded, and a real Arabic generation
-  completed end-to-end. Details: `ai-edition/AI_GOAL.md`.
+  `ai-edition/tayebos-ai.img` (2 GB, Alpine 3.24 + Ollama 0.17.7).
+  Measured in QEMU: **62-65 MB idle RAM** and real Arabic
+  generation end-to-end. Details: `ai-edition/AI_GOAL.md`.
+- **Slim by design (2026-11-15):** NO AI model is baked in - the
+  first `ai` run shows a size-labelled menu (your RAM's best fit
+  is marked), you pick, it downloads once to your disk. Rootfs
+  dropped from 1.7 GB to ~0.9 GB. Wi-Fi is built in:
+  wpa_supplicant + firmware for Intel/Broadcom/Qualcomm/Realtek/
+  MediaTek adapters and a simple `wifi` command. Default kernel
+  is now linux-lts (real-hardware drivers); linux-virt remains
+  as the `vm` boot option for virtual machines.
 - **Panel + Start menu (2026-11-15):** glass Waybar taskbar with a
   TayebOS start button, open-window buttons and a clock; a bemenu
   Start menu (AI Chat / Terminal / Editor / Browser / power) plus a

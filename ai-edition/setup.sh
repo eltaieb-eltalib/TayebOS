@@ -13,6 +13,20 @@ apk add labwc foot seatd xwayland \
         netsurf lite-xl micro \
         curl zram-init openrc
 
+# --- Wi-Fi: supplicant + tools + firmware for common adapters ---
+# linux-firmware-none satisfies the firmware-any dependency so the
+# full ~800 MB firmware set is NOT pulled; we add the Wi-Fi vendors.
+apk add wpa_supplicant iw linux-firmware-none \
+        linux-firmware-brcm linux-firmware-cypress \
+        linux-firmware-ath10k linux-firmware-ath11k \
+        linux-firmware-rtlwifi linux-firmware-mediatek \
+        linux-firmware-intel linux-firmware-qca \
+        linux-firmware-ti-connectivity
+mkdir -p /etc/wpa_supplicant
+printf 'ctrl_interface=/var/run/wpa_supplicant\nupdate_config=1\n' \
+    > /etc/wpa_supplicant/wpa_supplicant.conf
+rc-update add wpa_supplicant default || true
+
 # Heavier modern-sites browser, only if you want it:
 # apk add falkon
 
@@ -45,6 +59,7 @@ rc-update add zram-init boot || true
 # --- the `ai` command + model picker on PATH ---
 install -m755 select-model.sh /usr/local/bin/select-model.sh
 install -m755 ai /usr/local/bin/ai
+install -m755 wifi /usr/local/bin/wifi
 
-echo "Done. Reboot, then type: ai"
+echo "Done. Reboot, then: wifi (connect), ai (pick your model once)"
 echo "Model for this machine: $(select-model.sh)"

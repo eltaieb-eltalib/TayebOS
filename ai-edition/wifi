@@ -1,0 +1,70 @@
+#!/bin/sh
+# TayebOS wifi helper.
+#   wifi            -> scan, pick a network, type its password
+#   wifi scan       -> list networks
+#   wifi connect "SSID" ["password"]  (omit password for open nets)
+#   wifi status     -> show the current connection
+#   wifi off        -> stop wifi
+IF=wlan0
+CONF=/etc/wpa_supplicant/wpa_supplicant.conf
+
+have_dev() { [ -d "/sys/class/net/$IF" ]; }
+
+scan_ssids() {
+    ip link set "$IF" up 2>/dev/null
+    iw dev "$IF" scan 2>/dev/null | awk -F': ' '/SSID: /{print $2}' | grep -v '^$' | sort -u
+}
+
+do_connect() {
+    ssid="$1"; pass="$2"
+    service wpa_supplicant start >/dev/null 2>&1
+    for i in $(seq 1 10); do wpa_cli -i "$IF" ping >/dev/null 2>&1 && break; sleep 1; done
+    id=$(wpa_cli -i "$IF" add_network 2>/dev/null | tail -1)
+    wpa_cli -i "$IF" set_network "$id" ssid "\"$ssid\"" >/dev/null
+    if [ -n "$pass" ]; then
+        wpa_cli -i "$IF" set_network "$id" psk "\"$pass\"" >/dev/null
+    else
+        wpa_cli -i "$IF" set_network "$id" key_mgmt NONE >/dev/null
+    fi
+    wpa_cli -i "$IF" enable_network "$id" >/dev/null
+    wpa_cli -i "$IF" save_config >/dev/null 2>&1
+    echo "Connecting to '$ssid'..."
+    for i in $(seq 1 15); do
+        st=$(wpa_cli -i "$IF" status 2>/dev/null | grep '^wpa_state=' | cut -d= -f2)
+        [ "$st" = "COMPLETED" ] && break; sleep 1
+    done
+    if [ "$st" = "COMPLETED" ]; then
+        udhcpc -i "$IF" -q >/dev/null 2>&1
+        echo "Connected. Address: $(ip -4 addr show "$IF" | awk '/inet /{print $2}' | head -1)"
+    else
+        echo "Could not connect (wrong password or out of range?). State: $st"
+    fi
+}
+
+case "$1" in
+    scan)
+        have_dev || { echo "No Wi-Fi adapter found on this machine."; exit 1; }
+        scan_ssids ;;
+    connect)
+        have_dev || { echo "No Wi-Fi adapter found on this machine."; exit 1; }
+        [ -z "$2" ] && { echo "Usage: wifi connect \"SSID\" [password]"; exit 1; }
+        do_connect "$2" "$3" ;;
+    status)
+        wpa_cli -i "$IF" status 2>/dev/null | grep -E '^(ssid|ip_address|wpa_state)' || echo "Wi-Fi is not connected." ;;
+    off)
+        service wpa_supplicant stop ;;
+    "")
+        have_dev || { echo "No Wi-Fi adapter found on this machine."; exit 1; }
+        echo "Scanning..."
+        list=$(scan_ssids)
+        [ -z "$list" ] && { echo "No networks found."; exit 0; }
+        echo "$list" | awk '{printf "  %d) %s\n", NR, $0}'
+        printf "Pick a number (0 = cancel): "
+        read num </dev/tty
+        ssid=$(echo "$list" | awk -v n="$num" 'NR==n')
+        [ -z "$ssid" ] && { echo "Cancelled."; exit 0; }
+        printf "Password for '%s' (blank = open network): " "$ssid"
+        stty -echo </dev/tty 2>/dev/null; read pass </dev/tty; stty echo </dev/tty 2>/dev/null; echo
+        do_connect "$ssid" "$pass" ;;
+    *) echo "Usage: wifi [scan|connect \"SSID\" [password]|status|off]"; exit 1 ;;
+esac

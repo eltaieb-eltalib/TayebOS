@@ -1,20 +1,75 @@
 #!/bin/sh
 # TayebOS AI Edition - the `ai` terminal command.
-# Starts Ollama ONLY when you ask (zero RAM while idle), picks the
-# model that fits your RAM, chats, and lets Ollama unload the model
-# again after 2 minutes idle (OLLAMA_KEEP_ALIVE in setup.sh).
-set -e
-
+# Ollama starts ONLY on demand (zero RAM while idle). No model is
+# baked into the OS - TayebOS ships slim and YOU choose the model:
+# the first time, pick from the list (the one sized for your RAM is
+# marked *), it downloads once, and afterwards it just runs.
+#   ai            -> chat (asks you to pick a model the first time)
+#   ai <prompt>   -> one-shot answer from your model
+#   ai models     -> list installed models / download another
 DIR=$(dirname "$0")
-MODEL="${OLLAMA_MODEL:-$("$DIR/select-model.sh")}"
+REC=$("$DIR/select-model.sh")
 
-if ! curl -s http://127.0.0.1:11434/api/tags >/dev/null 2>&1; then
-    echo "TayebOS AI: starting Ollama (model for your RAM: $MODEL)..."
+server_up() { curl -s http://127.0.0.1:11434/api/tags >/dev/null 2>&1; }
+
+ensure_server() {
+    server_up && return 0
+    echo "TayebOS AI: starting Ollama..."
     ollama serve >/var/log/ollama.log 2>&1 &
-    for i in $(seq 1 30); do
-        curl -s http://127.0.0.1:11434/api/tags >/dev/null 2>&1 && break
-        sleep 1
-    done
+    for i in $(seq 1 30); do server_up && return 0; sleep 1; done
+    echo "Ollama did not start - see /var/log/ollama.log"
+    exit 1
+}
+
+installed() { ollama list 2>/dev/null | awk 'NR>1 {print $1}'; }
+
+catalog() {
+    cat <<LIST
+qwen2.5:0.5b|~400 MB|smallest - runs on any RAM
+llama3.2:1b|~800 MB|light, noticeably better
+llama3.2:3b|~2.0 GB|smarter, needs ~6 GB RAM
+phi3:mini|~2.3 GB|strong for its size, ~8 GB RAM
+mistral|~4.4 GB|solid all-rounder, ~12 GB RAM
+llama3.1:8b|~4.7 GB|best quality here, ~16 GB RAM
+LIST
+}
+
+choose_model() {
+    echo "No AI model installed yet - TayebOS ships slim; you pick." >&2
+    echo "Models (download once, then they live on your disk):" >&2
+    catalog | awk -F'|' -v rec="$REC" '{ printf "  %d) %-14s %-9s %s%s\n", NR, $1, $2, $3, ($1==rec ? "   * fits your RAM" : "") }' >&2
+    printf "Pick a number (0 = cancel): " >&2
+    read num </dev/tty || return 1
+    [ -z "$num" ] && num=0
+    name=$(catalog | awk -F'|' -v n="$num" 'NR==n {print $1}')
+    if [ -z "$name" ]; then echo "Cancelled." >&2; return 1; fi
+    echo "Downloading $name (needs internet - 'wifi' or ethernet)..." >&2
+    if ! ollama pull "$name"; then
+        echo "Download failed. Check your connection and try again: ai" >&2
+        return 1
+    fi
+    echo "$name"
+}
+
+ensure_server
+
+if [ "$1" = "models" ]; then
+    echo "Installed:"; installed | sed 's/^/  /'
+    echo; choose_model >/dev/null || exit 0
+    exit 0
+fi
+
+MODEL="${OLLAMA_MODEL:-}"
+if [ -z "$MODEL" ]; then
+    if installed | grep -qx "$REC"; then
+        MODEL="$REC"
+    elif [ -n "$(installed)" ]; then
+        MODEL=$(installed | head -1)
+    else
+        MODEL=$(choose_model | tail -1)
+        [ -z "$MODEL" ] && exit 0
+        installed | grep -qx "$MODEL" || exit 0
+    fi
 fi
 
 if [ $# -eq 0 ]; then
