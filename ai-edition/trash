@@ -1,0 +1,137 @@
+#!/bin/sh
+# TayebOS trash - freedesktop trash can for the terminal.
+# Deleted files go to ~/.local/share/Trash and show up in the file
+# manager's Trash (PCManFM), where they can be restored or deleted
+# forever. Nothing is erased until you empty the trash.
+TRASH_DIR="$HOME/.local/share/Trash"
+FILES="$TRASH_DIR/files"
+INFO="$TRASH_DIR/info"
+mkdir -p "$FILES" "$INFO"
+
+urlencode() {
+    printf '%s' "$1" | sed -e 's/%/%25/g' -e 's/ /%20/g' -e 's/#/%23/g' -e 's/?/%3F/g'
+}
+
+urldecode() {
+    s=$1
+    out=
+    while [ -n "$s" ]; do
+        case $s in
+            %[0-9A-Fa-f][0-9A-Fa-f]*)
+                hex=$(printf '%s' "$s" | cut -c2-3)
+                out="$out$(printf "\\$(printf '%03o' "0x$hex")")"
+                s=$(printf '%s' "$s" | cut -c4-)
+                ;;
+            *)
+                out="$out$(printf '%s' "$s" | cut -c1)"
+                s=$(printf '%s' "$s" | cut -c2-)
+                ;;
+        esac
+    done
+    printf '%s' "$out"
+}
+
+orig_path() { # trash-name -> original absolute path
+    p=$(sed -n 's/^Path=//p' "$INFO/$1.trashinfo" | head -1)
+    urldecode "$p"
+}
+
+cmd_put() {
+    rc=0
+    for f in "$@"; do
+        if [ ! -e "$f" ] && [ ! -L "$f" ]; then
+            echo "trash: $f: no such file or directory" >&2
+            rc=1
+            continue
+        fi
+        case $f in
+            /*) abs=$f ;;
+            *)  abs=$PWD/$f ;;
+        esac
+        # normalize trailing slash for directories
+        abs=${abs%/}
+        base=$(basename "$abs")
+        name=$base
+        n=2
+        while [ -e "$FILES/$name" ] || [ -e "$INFO/$name.trashinfo" ]; do
+            name="$base $n"
+            n=$((n + 1))
+        done
+        {
+            echo "[Trash Info]"
+            echo "Path=$(urlencode "$abs")"
+            echo "DeletionDate=$(date +%Y-%m-%dT%H:%M:%S)"
+        } > "$INFO/$name.trashinfo"
+        if mv -- "$abs" "$FILES/$name"; then
+            echo "trashed: $base"
+        else
+            rm -f "$INFO/$name.trashinfo"
+            echo "trash: could not move $f" >&2
+            rc=1
+        fi
+    done
+    return $rc
+}
+
+cmd_list() {
+    found=0
+    for i in "$INFO"/*.trashinfo; do
+        [ -e "$i" ] || continue
+        name=$(basename "$i" .trashinfo)
+        [ -e "$FILES/$name" ] || continue
+        found=1
+        d=$(sed -n 's/^DeletionDate=//p' "$i" | head -1)
+        echo "$name  <-  $(orig_path "$name")  ($d)"
+    done
+    [ "$found" = 0 ] && echo "trash is empty"
+    return 0
+}
+
+cmd_restore() {
+    target=$1
+    name=
+    if [ -e "$INFO/$target.trashinfo" ]; then
+        name=$target
+    else
+        for i in "$INFO"/*.trashinfo; do
+            [ -e "$i" ] || continue
+            n=$(basename "$i" .trashinfo)
+            if [ "$(basename "$(orig_path "$n")")" = "$target" ]; then
+                name=$n
+                break
+            fi
+        done
+    fi
+    if [ -z "$name" ]; then
+        echo "trash: '$target' not found in trash (try: trash list)" >&2
+        return 1
+    fi
+    dest=$(orig_path "$name")
+    if [ -e "$dest" ]; then
+        echo "trash: cannot restore, $dest already exists" >&2
+        return 1
+    fi
+    mkdir -p "$(dirname "$dest")"
+    mv -- "$FILES/$name" "$dest" && rm -f "$INFO/$name.trashinfo" && echo "restored: $dest"
+}
+
+cmd_empty() {
+    count=$(ls "$INFO" 2>/dev/null | wc -l)
+    rm -rf "$FILES"/* "$FILES"/.[!.]* "$INFO"/*.trashinfo 2>/dev/null
+    echo "trash emptied ($count item(s) permanently deleted)"
+}
+
+case $1 in
+    list|--list|-l)   cmd_list ;;
+    restore|--restore) shift; [ -n "$1" ] || { echo "usage: trash restore <name>" >&2; exit 2; }; cmd_restore "$1" ;;
+    empty|--empty)    cmd_empty ;;
+    ""|-h|--help|help)
+        echo "usage:"
+        echo "  trash <file...>   move files to the trash"
+        echo "  trash list        show what is in the trash"
+        echo "  trash restore <name>  bring a file back"
+        echo "  trash empty       delete everything in the trash forever"
+        echo "The trash also appears in the file manager (PCManFM > Trash)."
+        ;;
+    *)  cmd_put "$@" ;;
+esac

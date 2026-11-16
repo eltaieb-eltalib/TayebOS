@@ -16,6 +16,9 @@
     <item label="Files">
       <action name="Execute"><command>pcmanfm</command></action>
     </item>
+    <item label="Trash">
+      <action name="Execute"><command>pcmanfm trash:///</command></action>
+    </item>
     <item label="Media Player">
       <action name="Execute"><command>mpv --idle --force-window</command></action>
     </item>

@@ -1,7 +1,7 @@
 #!/bin/sh
 # TayebOS start menu (bemenu, glass colours)
 choice=$(printf '%s\n' \
-  'AI Chat' 'Terminal' 'Code Editor' 'Browser' 'Files' 'Media Player' 'Reboot' 'Power Off' \
+  'AI Chat' 'Terminal' 'Code Editor' 'Browser' 'Files' 'Trash' 'Media Player' 'Reboot' 'Power Off' \
   | bemenu -i -p 'TayebOS' -l 8 --center -W 0.32 \
       --fn 'DejaVu Sans 13' \
       --tb '#0d7377' --tf '#ffffff' \
@@ -13,6 +13,7 @@ case "$choice" in
   'Code Editor') lite-xl & ;;
   'Browser')     netsurf file:///usr/share/tayebos/welcome.html & ;;
   'Files')       pcmanfm & ;;
+  'Trash')       pcmanfm trash:/// & ;;
   'Media Player') mpv --idle --force-window & ;;
   'Reboot')      reboot ;;
   'Power Off')   poweroff ;;
