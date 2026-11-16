@@ -27,6 +27,19 @@ printf 'ctrl_interface=/var/run/wpa_supplicant\nupdate_config=1\n' \
     > /etc/wpa_supplicant/wpa_supplicant.conf
 rc-update add wpa_supplicant default || true
 
+# --- Sound, light media player, file manager, other disks ---
+# ALSA only (no Pulse/PipeWire weight); mpv is the VLC-class player
+# at a fraction of the size; pcmanfm manages files; ntfs-3g +
+# exfatprogs make Windows disks fully readable/writable.
+apk add alsa-utils mpv pcmanfm ntfs-3g exfatprogs util-linux \
+        font-noto-arabic
+rc-update add alsa boot || true
+# Arabic keyboard: labwc environment file sets
+# XKB_DEFAULT_LAYOUT=us,ara + XKB_DEFAULT_OPTIONS=grp:alt_shift_toggle
+# (Alt+Shift switches). mpv defaults live in ~/.config/mpv/mpv.conf
+# (vo=wlshm so video works on any graphics). The `disks` helper in
+# /usr/local/bin lists/mounts other disks under /media.
+
 # Heavier modern-sites browser, only if you want it:
 # apk add falkon
 

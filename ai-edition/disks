@@ -1,0 +1,28 @@
+#!/bin/sh
+# TayebOS disk helper - see and use other disks (internal HDD,
+# extra USB sticks) even when you booted from a USB flash.
+#   disks              -> list disks and partitions
+#   disks mount sdb1   -> mount /dev/sdb1 at /media/sdb1
+#   disks umount sdb1  -> unmount it
+# Your system disk itself is already writable - files you create
+# anywhere on it are saved, flash boot or not.
+case "$1" in
+    "")
+        lsblk -o NAME,SIZE,FSTYPE,LABEL,MOUNTPOINT ;;
+    mount)
+        dev="/dev/$2"
+        [ -b "$dev" ] || { echo "No such partition: $2 (try: disks)"; exit 1; }
+        fs=$(blkid "$dev" 2>/dev/null | sed -n 's/.*TYPE="\([^"]*\)".*/\1/p')
+        mkdir -p "/media/$2"
+        if [ "$fs" = "ntfs" ]; then
+            mount -t ntfs-3g "$dev" "/media/$2"
+        else
+            mount "$dev" "/media/$2"
+        fi
+        [ $? -eq 0 ] && echo "Mounted $2 ($fs) at /media/$2 - open it with: pcmanfm /media/$2" \
+                     || echo "Mount failed for $2 ($fs)" ;;
+    umount)
+        umount "/media/$2" && echo "Unmounted $2 - safe to remove" ;;
+    *)
+        echo "Usage: disks [mount <partition>|umount <partition>]" ;;
+esac
