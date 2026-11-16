@@ -1,20 +1,5 @@
 #!/bin/sh
-# TayebOS start menu (bemenu, glass colours)
-choice=$(printf '%s\n' \
-  'AI Chat' 'Terminal' 'Code Editor' 'Browser' 'Files' 'Trash' 'Media Player' 'Reboot' 'Power Off' \
-  | bemenu -i -p 'TayebOS' -l 8 --center -W 0.32 \
-      --fn 'DejaVu Sans 13' \
-      --tb '#0d7377' --tf '#ffffff' \
-      --nb '#0a2e3f' --nf '#e8f6f3' \
-      --hb '#0d7377' --hf '#ffffff')
-case "$choice" in
-  'AI Chat')     sakura -e ai & ;;
-  'Terminal')    sakura & ;;
-  'Code Editor') lite-xl & ;;
-  'Browser')     netsurf file:///usr/share/tayebos/welcome.html & ;;
-  'Files')       pcmanfm & ;;
-  'Trash')       pcmanfm trash:/// & ;;
-  'Media Player') mpv --idle --force-window & ;;
-  'Reboot')      reboot ;;
-  'Power Off')   poweroff ;;
-esac
+# TayebOS start menu — fuzzel, a native C Wayland launcher (glass theme
+# in ~/.config/fuzzel/fuzzel.ini). Lists every app from its .desktop
+# entry; type to search. Starts in a few milliseconds, no runtime.
+exec fuzzel

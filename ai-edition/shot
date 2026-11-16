@@ -1,0 +1,18 @@
+#!/bin/sh
+# TayebOS screenshot: shot [area] — full screen (or a selected area)
+# saved to ~/Pictures with a timestamp, plus a desktop notification.
+mkdir -p "$HOME/Pictures"
+f="$HOME/Pictures/shot-$(date +%Y%m%d-%H%M%S).png"
+if [ "$1" = "area" ]; then
+    geo=$(slurp) || exit 1
+    grim -g "$geo" "$f"
+else
+    grim "$f"
+fi
+if [ -s "$f" ]; then
+    notify-send "TayebOS" "Screenshot saved: $f"
+    echo "$f"
+else
+    notify-send "TayebOS" "Screenshot failed"
+    exit 1
+fi

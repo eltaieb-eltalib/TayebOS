@@ -1,0 +1,11 @@
+#!/bin/sh
+# TayebOS brightness control: bright up|down (brightnessctl + wob bar)
+case $1 in
+    up)   brightnessctl -q set +5% ;;
+    down) brightnessctl -q set 5%- ;;
+    *)    echo "usage: bright up|down" >&2; exit 2 ;;
+esac
+v=$(brightnessctl -m | cut -d, -f4 | tr -d '%')
+fifo=$XDG_RUNTIME_DIR/wob.fifo
+[ -p "$fifo" ] && ( echo "$v" > "$fifo" & )
+echo "brightness: $v%"

@@ -15,6 +15,38 @@
     <name>sans</name>
     <size>11</size>
   </font>
+  <keyboard>
+    <keybind key="Super_L">
+      <action name="Execute"><command>tayebos-menu</command></action>
+    </keybind>
+    <keybind key="W-t">
+      <action name="Execute"><command>sakura</command></action>
+    </keybind>
+    <keybind key="W-f">
+      <action name="Execute"><command>pcmanfm</command></action>
+    </keybind>
+    <keybind key="XF86AudioRaiseVolume">
+      <action name="Execute"><command>vol up</command></action>
+    </keybind>
+    <keybind key="XF86AudioLowerVolume">
+      <action name="Execute"><command>vol down</command></action>
+    </keybind>
+    <keybind key="XF86AudioMute">
+      <action name="Execute"><command>vol mute</command></action>
+    </keybind>
+    <keybind key="XF86MonBrightnessUp">
+      <action name="Execute"><command>bright up</command></action>
+    </keybind>
+    <keybind key="XF86MonBrightnessDown">
+      <action name="Execute"><command>bright down</command></action>
+    </keybind>
+    <keybind key="Print">
+      <action name="Execute"><command>shot</command></action>
+    </keybind>
+    <keybind key="S-Print">
+      <action name="Execute"><command>shot area</command></action>
+    </keybind>
+  </keyboard>
   <mouse>
     <context name="Root">
       <mousebind button="Right" action="Press">

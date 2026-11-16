@@ -1,0 +1,16 @@
+#!/bin/sh
+# TayebOS volume control: vol up|down|mute (ALSA + wob on-screen bar)
+case $1 in
+    up)   amixer -q sset Master 5%+ ;;
+    down) amixer -q sset Master 5%- ;;
+    mute) amixer -q sset Master toggle ;;
+    *)    echo "usage: vol up|down|mute" >&2; exit 2 ;;
+esac
+if amixer sget Master | grep -q '\[off\]'; then
+    v=0
+else
+    v=$(amixer sget Master | grep -o '[0-9]*%' | head -1 | tr -d '%')
+fi
+fifo=$XDG_RUNTIME_DIR/wob.fifo
+[ -p "$fifo" ] && ( echo "$v" > "$fifo" & )
+echo "volume: $v%"
