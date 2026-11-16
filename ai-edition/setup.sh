@@ -32,7 +32,7 @@ rc-update add wpa_supplicant default || true
 # at a fraction of the size; pcmanfm manages files; ntfs-3g +
 # exfatprogs make Windows disks fully readable/writable.
 apk add alsa-utils mpv pcmanfm ntfs-3g exfatprogs util-linux \
-        font-noto-arabic
+        font-noto-arabic sakura
 rc-update add alsa boot || true
 # Arabic keyboard: labwc environment file sets
 # XKB_DEFAULT_LAYOUT=us,ara + XKB_DEFAULT_OPTIONS=grp:alt_shift_toggle
@@ -76,3 +76,9 @@ install -m755 wifi /usr/local/bin/wifi
 
 echo "Done. Reboot, then: wifi (connect), ai (pick your model once)"
 echo "Model for this machine: $(select-model.sh)"
+
+# UTF-8 everywhere: /etc/profile.d/tayebos-locale.sh exports
+# LANG=C.UTF-8 + LC_ALL=C.UTF-8; the desktop launcher and the
+# labwc environment file export the same for GUI apps. The default
+# terminal is sakura (VTE) because it shapes Arabic text (HarfBuzz/
+# FriBidi) - foot stays installed as a light backup terminal.
